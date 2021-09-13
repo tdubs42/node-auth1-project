@@ -19,7 +19,7 @@ server.use(session({
   */
   cookie: {
     maxAge: 604800000, // 7 days
-    secure: false,
+    secure: false, // turned off for codegrade testing purposes
   }, // 1 day in milliseconds
   httpOnly: true,
   resave: false,

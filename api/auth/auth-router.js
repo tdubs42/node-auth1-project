@@ -1,17 +1,15 @@
 const router = require('express').Router()
-const bcrypt = require('bcryptjs')
 const {
   checkUsernameFree,
   checkUsernameExists,
   checkPasswordLength,
-  restricted,
   hashPassword
 } = require('./auth-middleware')
 const User = require('../users/users-model')
 
 router.post('/register',
-  checkUsernameFree,
   checkPasswordLength,
+  checkUsernameFree,
   hashPassword,
   (req, res, next) => {
     const {newUser} = req
@@ -25,24 +23,9 @@ router.post('/register',
   }
 )
 
-router.post('/login', (req, res, next) => {
-  const {
-    username,
-    password
-  } = req.body
-  User.findBy({username})
-    .then(user => {
-      if (user[0] && bcrypt.compareSync(password, user[0].password)) {
-        req.session.user = user
-        res.json({message: `Welcome ${username}`})
-      } else {
-        next({
-          status: 401,
-          message: 'Invalid credentials'
-        })
-      }
-    })
-    .catch(next)
+router.post('/login', checkUsernameExists, (req, res) => {
+  const {username} = req.body
+  res.json({message: `Welcome ${username}`})
 })
 
 router.get('/logout', (req, res, next) => {

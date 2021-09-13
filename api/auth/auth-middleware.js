@@ -20,7 +20,7 @@ function restricted(req, res, next) {
   }
 }
 
-async function checkUsernameFree(req, res, next) {
+function checkUsernameFree(req, res, next) {
   const {username} = req.body
   User.findBy({username})
     .then(taken => {
@@ -45,7 +45,20 @@ async function checkUsernameFree(req, res, next) {
   }
 */
 function checkUsernameExists(req, res, next) {
-
+  const {username, password} = req.body
+  User.findBy({username})
+    .then(user => {
+      if (user[0] && bcrypt.compareSync(password, user[0].password)) {
+        req.session.user = user
+        next()
+      } else {
+        next({
+          status: 401,
+          message: 'Invalid credentials'
+        })
+      }
+    })
+    .catch(next)
 }
 
 /*
@@ -62,7 +75,7 @@ function checkPasswordLength(req, res, next) {
   if (password.length > 3) {
     next()
   }
-  if (!password || password.length < 3) {
+  if (typeof password === 'undefined' || password.length < 3) {
     next({
       status: 422,
       message: 'Password must be longer than 3 chars'
